@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t shebbar93/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run shebbar93/react-test npm test -- --watchAll=false
+
+after_success:
+  - docker build -t shebbar93/multi-client ./client
+  - docker build -t shebbar93/multi-nginx ./nginx
+  - docker build -t shebbar93/multi-server ./server
+  - docker build -t shebbar93/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push shebbar93/multi-client
+  - docker push shebbar93/multi-nginx
+  - docker push shebbar93/multi-server
+  - docker push shebbar93/multi-worker
